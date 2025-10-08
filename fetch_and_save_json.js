@@ -12,10 +12,10 @@ async function main() {
   const inputPath = "./report.json";
   const outputPath = "./report_with_csv_data.json";
 
-  // 1️⃣ Read base report
+  //  Read base report
   const json = JSON.parse(fs.readFileSync(inputPath, "utf-8"));
 
-  // 2️⃣ Extract CSV URLs
+  //  Extract CSV URLs
   const csvUrls = {
     cumulative_analysis_csv: json.results?.cumulative_analysis_csv,
     particle_distribution_csv: json.results?.particle_distribution_csv,
@@ -31,7 +31,7 @@ async function main() {
       const fileName = url.split("/").pop(); // extract file name
       fetched_csv_data[fileName] = csvText; // store as raw text
     } catch (err) {
-      console.error(`❌ Failed to fetch ${key}:`, err.message);
+      console.error(` Failed to fetch ${key}:`, err.message);
     }
   }
 
@@ -41,10 +41,10 @@ async function main() {
   // 5️⃣ Save new JSON with pretty formatting
   fs.writeFileSync(outputPath, JSON.stringify(json, null, 2), "utf-8");
 
-  console.log(`✅ New JSON with embedded CSV data saved to: ${outputPath}`);
+  console.log(`New JSON with embedded CSV data saved to: ${outputPath}`);
 }
 
 main().catch((err) => {
-  console.error("❌ Error:", err);
+  console.error(" Error:", err);
   process.exit(1);
 });

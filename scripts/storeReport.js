@@ -35,7 +35,7 @@ async function main(){
     if (fileHashHex.length !== 66)
         throw new Error(`Invalid hash length: ${fileHashHex.length}`);
     
-    console.log("✅ Combined SHA256 hash:", fileHashHex);
+    console.log(" Combined SHA256 hash:", fileHashHex);
 
       // 2️⃣ Connect to deployed contract
   const registryAddr = process.env.HashRegistry_Address;
@@ -44,21 +44,21 @@ async function main(){
   const registry = await ethers.getContractAt("HashRegistry", registryAddr);
   const [signer] = await ethers.getSigners();
 
-  // 3️⃣ Prepare metadata
-  const jobId = json.jobId; // ✅ correct
+  // 3 Prepare metadata
+  const jobId = json.jobId; // 
   const productName = json.productName || json.product_name || "UnknownProduct";
   const userName = json.username || "scanner_operator";
 //   const location = json.results?.location || "Unknown";
 
-  console.log(`📦 Storing report for job: ${jobId}`);
+  console.log(`Storing report for job: ${jobId}`);
 
   //Store onchain
   const tx = await registry.connect(signer).storeReport(jobId, fileHashHex , productName, userName);
   await tx.wait();
 
-  console.log("✅ Stored on-chain in tx:", tx.hash);
+  console.log(" Stored on-chain in tx:", tx.hash);
 
-  // 5️⃣ Verify retrieval
+  //  Verify retrieval
   const report = await registry.getReport(jobId);
   const IST_OFFSET = 5.5 * 60 * 60 * 1000
 
@@ -73,6 +73,6 @@ async function main(){
 }
 
 main().catch((e) => {
-    console.error("❌ Error:", e);
+    console.error("Error:", e);
     process.exit(1);
   });

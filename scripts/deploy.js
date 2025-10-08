@@ -9,8 +9,8 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   const network = await ethers.provider.getNetwork();
 
-  console.log(`🌐 Network: ${network.name}`);
-  console.log(`👤 Deployer: ${deployer.address}`);
+  console.log(`Network: ${network.name}`);
+  console.log(` Deployer: ${deployer.address}`);
 
   // Deploy contract
   const HashRegistry = await ethers.getContractFactory("HashRegistry");
@@ -39,11 +39,11 @@ async function main() {
 
   // Save the updated file
   fs.writeFileSync(filePath, JSON.stringify(deployedData, null, 2));
-  console.log(`📝 Deployment info saved to ${filePath}`);
+  console.log(`Deployment info saved to ${filePath}`);
 
   // verifcation info for Sepolia
   if (network.name === "sepolia") {
-    console.log("\n🔍 To verify on Etherscan, run:");
+    console.log("\n To verify on Etherscan, run:");
     console.log(
       `npx hardhat verify --network sepolia ${contractAddress} "${deployer.address}"`
     );
