@@ -10,7 +10,10 @@ This repository contains a **HashRegistry smart contract** on Ethereum networks 
 3. [Setup](#setup)
 4. [Local Testing](#local-testing)
 5. [Sepolia Deployment](#sepolia-deployment)
-6. [storeReport.js](#storereportjs)
+6. [Scripts Overview](#scripts-overview)
+   - [storeReport.js](#storereportjs)
+   - [verifyReport.js](#verifyreportjs)
+   - [hashGenerator.js](#hashgeneratorjs)
 7. [Smart Contract Details](#smart-contract-details)
 8. [Sample Output](#sample-output)
 9. [Notes](#notes)
@@ -37,7 +40,11 @@ inweon-HashRegistry-test/
 │
 ├── scripts/
 │   ├── deploy.js
-│   └── storeReport.js
+│   ├── storeReport.js
+│   └── verifyReport.js
+│
+├── utils/
+│   └── hashGenerator.js
 │
 ├── test/
 │   └── HashRegistry.test.js
@@ -108,10 +115,22 @@ npx hardhat run scripts/storeReport.js --network localhost
 
 The script will:
 - Fetch CSVs from the JSON report
-- Combine and SHA256 hash the JSON + CSVs
+- Use `hashGenerator.js` utility to combine and SHA256 hash the JSON + CSVs
 - Store hash and metadata on-chain
 - Retrieve the report from the blockchain
 - Display timestamp in IST (optional)
+
+### 4. Verify a report (Integrity Test)
+
+```bash
+npx hardhat run scripts/verifyReport.js --network localhost
+```
+
+The script will:
+- Rehash the JSON report and its CSVs using `hashGenerator.js`
+- Fetch the on-chain hash using the job ID
+- Compare both hashes to verify data integrity
+- Display verification results
 
 ---
 
@@ -134,21 +153,60 @@ The deploy script will:
 npx hardhat run scripts/storeReport.js --network sepolia
 ```
 
-Here is the deployed sample hashRegisry on sepolia : 0xD73303F73Cf47B40A2D93506fD6B5eE7a2b85640
+### 3. Verify reports on Sepolia
+
+```bash
+npx hardhat run scripts/verifyReport.js --network sepolia
+```
 
 ---
 
-## storeReport.js
+## Scripts Overview
+
+### storeReport.js
 
 This script performs the following operations:
 
 1. Reads a JSON report (`report.json`)
-2. Fetches CSV files referenced in the JSON
-3. Combines all content and hashes using SHA256
+2. Imports the `hashGenerator` utility from `utils/hashGenerator.js`
+3. Uses `hashGenerator` to fetch CSV files and create a combined SHA256 hash
 4. Sends the hash and metadata to the deployed smart contract
 5. Retrieves the report and prints it
 
 **Important:** Hash stored on-chain is SHA256, not Keccak.
+
+### verifyReport.js
+
+This script performs integrity verification:
+
+1. Reads a JSON report (`report.json`)
+2. Imports the `hashGenerator` utility from `utils/hashGenerator.js`
+3. Rehashes the report and its CSV files using the same algorithm
+4. Fetches the on-chain hash from the smart contract using the job ID
+5. Compares the newly generated hash with the on-chain hash
+6. Displays verification results (✅ Match or ❌ Mismatch)
+
+**Usage:**
+```bash
+# For local testing
+npx hardhat run scripts/verifyReport.js --network localhost
+
+# For Sepolia testnet
+npx hardhat run scripts/verifyReport.js --network sepolia
+```
+
+### hashGenerator.js
+
+A utility module located in `utils/hashGenerator.js` that provides hash generation functionality:
+
+**Exported Function:**
+- `generateHash(reportData)` - Takes report JSON data, fetches associated CSV files, combines all content, and returns a SHA256 hash
+
+**Features:**
+- Fetches CSV files from URLs specified in the report
+- Combines JSON metadata with CSV content
+- Generates consistent SHA256 hashes for integrity verification
+- Used by both `storeReport.js` and `verifyReport.js`
 
 ---
 
@@ -182,7 +240,7 @@ struct Report {
 
 #### Events
 
-- **`ReportStored(string jobId, bytes32 reportHash, string productName, string username, uint256 timestamp, address uploadedBy)`**
+- **`event ReportStored(string indexed jobId,bytes32 indexed reportHash,string productName,string indexed username,uint256 timestamp,address uploadedBy)`**
 
 #### Custom Errors
 
@@ -196,9 +254,10 @@ struct Report {
 ## Sample Output
 
 ```
-✅ Combined SHA256 hash: 0x7bf6c70192cd36d40a420199a49e79cfcf9a4dff98f9c3ccb24992e3a7efbab7
-📦 Storing report for job: 649223be-d198-40f1-b5ab-ec200b43941b
-✅ Stored on-chain in tx: 0xa8dba2ce9a9a125cec875636c0a8bcb60bef4613f521b7b1d8836d04bd9be63c
+Combined SHA256 hash: 0x7bf6c70192cd36d40a420199a49e79cfcf9a4dff98f9c3ccb24992e3a7efbab7
+Storing report for job: 649223be-d198-40f1-b5ab-ec200b43941b
+Stored on-chain in tx: 0xa8dba2ce9a9a125cec875636c0a8bcb60bef4613f521b7b1d8836d04bd9be63c
+
 📖 On-chain reports:
 {
   hash: '0x7bf6c70192cd36d40a420199a49e79cfcf9a4dff98f9c3ccb24992e3a7efbab7',
