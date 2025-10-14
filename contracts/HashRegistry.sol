@@ -13,7 +13,7 @@ contract HashRegistry is Ownable {
         address uploadedBy;      
     }
 
-    mapping(string => Report) private reportsByJob;
+    mapping(string => Report) public reportsByJob;
     
     //  Events //
     event ReportStored(
@@ -59,10 +59,6 @@ contract HashRegistry is Ownable {
         string calldata productName,
         string calldata username
     ) external onlyOwner validNewReport(jobId, reportHash){
-        require(bytes(jobId).length > 0, "Empty jobId");
-        require(reportHash != bytes32(0), "Empty hash");
-        require(reportsByJob[jobId].timestamp == 0, "Job already exists");
-
         reportsByJob[jobId] = Report({
             reportHash: reportHash,
             jobId: jobId,
@@ -91,7 +87,6 @@ contract HashRegistry is Ownable {
         reportExists(jobId)
         returns (Report memory)
     {
-        require(reportsByJob[jobId].timestamp != 0, "Report not found");
         return reportsByJob[jobId];
     }
 
@@ -99,11 +94,11 @@ contract HashRegistry is Ownable {
      * @notice Verify if a provided hash matches the stored report hash
      */
     function verifyReportHash(string calldata jobId, bytes32 providedHash)
-        external
-        view
-        returns (bool)
+    external
+    view
+    reportExists(jobId)
+    returns (bool)
     {
-        require(reportsByJob[jobId].timestamp != 0, "Report not found");
         return reportsByJob[jobId].reportHash == providedHash;
     }
 }
